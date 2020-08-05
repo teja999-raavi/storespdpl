@@ -10,7 +10,7 @@ var db_config = {
 var connection;
 
 function handleDisconnect() {
-    console.log("Connected to [MySQL]\n");
+    console.log("Connected to [MySQL Successfully]\n");
     connection = mysql.createPool(db_config);
     return connection;
 }
