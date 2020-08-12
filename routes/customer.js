@@ -54,7 +54,7 @@ app.post('/update',(req,res) => {
     var city = req.body.city;
     var pincode = req.body.pincode;
     var question = req.body.question;
-    var update = 1
+    var update = 0
     // console.log(del1);
     var sql = "UPDATE `customer` SET `Hno`='"+hno+"',`area`='"+area+"',`city`='"+city+"',`pincode`='"+pincode+"',`question`='"+question+"',`updateStatus`='"+update+"' WHERE `id` = '"+req.body.id+"'";
     // console.log(sql)
@@ -79,10 +79,14 @@ app.post('/Details',(req,res) => {
     var sql = "SELECT * FROM `customer` WHERE `id` = '"+id+"'";
     connection.query(sql,(err,result) => {
         if(err) throw err;
-        if(result.length == 1){
+        if(result.length > 0){
             res.send({
-                
+                status:1,
                 result
+            });
+        }else{
+            res.send({
+                status:0
             })
         }
     })
@@ -106,11 +110,49 @@ app.post('/search',(req,res) => {
     })
 })
 
+app.post('/g_search',(req,res) => {
+    // console.log(req.body.loc);
+    var search = req.body.loc;
+    var sql = "SELECT id,shopname,location FROM `groceries` WHERE `location` LIKE '%"+search+"%' LIMIT 25";
+    
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        // console.log(result)
+        if(result.length > 0){
+            res.status(200).send(result)
+        }else{
+            res.send({
+                status: 0
+            })
+        }
+    })
+})
+
+
 app.post('/search1',(req,res) => {
     // console.log(req.body.loc);
     var search = req.body.search;
     // var sql = "SELECT * FROM `"+req.body.shop+"_1` WHERE `category` LIKE CONCAT('%"+search+"%') OR `brand` LIKE CONCAT('%"+search+"%')  LIMIT 25";
     var sql = "SELECT id,category,shop_name FROM `"+req.body.shop+"_1` WHERE `category` LIKE '%"+search+"%' LIMIT 25";
+    
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        // console.log(result)
+        if(result.length > 0){
+            res.status(200).send(result)
+        }else{
+            res.send({
+                status: 0
+            })
+        }
+    })
+})
+
+app.post('/groceriesSearch1',(req,res) => {
+    // console.log(req.body.loc);
+    var search = req.body.search;
+    // var sql = "SELECT * FROM `"+req.body.shop+"_1` WHERE `category` LIKE CONCAT('%"+search+"%') OR `brand` LIKE CONCAT('%"+search+"%')  LIMIT 25";
+    var sql = "SELECT id,item,shop_name FROM `"+req.body.shop+"_groceries` WHERE `item` LIKE '%"+search+"%' LIMIT 25";
     
     connection.query(sql,(err,result) => {
         if(err) throw err;
@@ -182,6 +224,26 @@ app.post('/shopDetails',(req,res) => {
         })
 })
 
+app.post('/GroceriesShopDetails',(req,res) => {
+    // console.log(req.body);
+    var shop = req.body.shop;
+    var sql = "SELECT * FROM `groceries` WHERE `shopname`='"+shop+"' ";
+        connection.query(sql,(err,result) => {
+            if(err) throw err;
+            if(result.length == 1){
+                res.send({
+                    status1 : 1,
+                    result
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }            
+        })
+})
+
+
 app.post('/order',(req,res) => {
     // console.log(req.body);
     var delivery_b = req.body.delivery_b;
@@ -221,8 +283,126 @@ app.post('/order',(req,res) => {
         })
 })
 
+app.post('/g_order',(req,res) => {
+    
+    var delivery_b = req.body.delivery_b;
+    var del = delivery_b[Math.floor(Math.random()*delivery_b.length)];
+    // console.log(del);
+    var shop_id = req.body.shop_id;
+    var shop= req.body.shop;
+    var item_id = req.body.id;
+    var item = req.body.item;
+    var item_price = req.body.price;
+    var sizeprice = req.body.size
+    var sizeprice1 = sizeprice.split(',');
+    // console.log(sizeprice);
+    var size = sizeprice1[0];
+    var price = sizeprice1[1];
+    // console.log(size,price);
+    var qty = req.body.qty;
+    var image= req.body.Data[0].image;
+    var s_email = req.body.s_email;
+    var s_name = req.body.owner;
+    var s_phone= req.body.s_phone;
+    var customer_id=req.body.cid;
+    var c_name=req.body.c_name;
+    var c_email=req.body.c_email;
+    var c_phone=req.body.c_phone;
+    var hno=req.body.hno;
+    var area=req.body.area;
+    var city=req.body.city;
+    var payment=req.body.payment;
+
+    if(sizeprice == '' && qty !== ''){
+        var item_price = qty*item_price;
+        var sql="INSERT INTO `grocer_order`(`customer_id`, `shop_id`, `item_id`, `item_image`,`item`, `item_qty`,`item_price`, `shop`, `s_owner`, `s_email`, `s_phone`,  `c_name`, `c_email`, `c_phone`, `hno`, `area`, `city`, `delivery_boy`, `payment`) VALUES('"+customer_id+"','"+shop_id+"','"+item_id+"','"+image+"','"+item+"','"+qty+"','"+item_price+"','"+shop+"','"+s_name+"','"+s_email+"','"+s_phone+"','"+c_name+"','"+c_email+"','"+c_phone+"','"+hno+"','"+area+"','"+city+"','"+del+"','"+payment+"')";
+        connection.query(sql,(err,result)=>{
+            if(err) throw err;
+            if(result.affectedRows == 1){
+                res.send({
+                    status1:1
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }
+        })
+    }else{
+
+    var sql="INSERT INTO `grocer_order`(`customer_id`, `shop_id`, `item_id`, `item_image`,`item`, `item_qty`,`item_price`, `shop`, `s_owner`, `s_email`, `s_phone`,  `c_name`, `c_email`, `c_phone`, `hno`, `area`, `city`, `delivery_boy`, `payment`) VALUES('"+customer_id+"','"+shop_id+"','"+item_id+"','"+image+"','"+item+"','"+size+"','"+price+"','"+shop+"','"+s_name+"','"+s_email+"','"+s_phone+"','"+c_name+"','"+c_email+"','"+c_phone+"','"+hno+"','"+area+"','"+city+"','"+del+"','"+payment+"')";
+        connection.query(sql,(err,result)=>{
+            if(err) throw err;
+            if(result.affectedRows == 1){
+                res.send({
+                    status1:1
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }
+        })
+    }
+})
+
 app.post('/orderData',(req,res)=>{
     var sql =" SELECT * FROM `orders` WHERE `cutomer_id`='"+req.body.cid+"'";
+     connection.query(sql,(err,result) => {
+         if(err) throw err;
+         if(result.length > 0){
+              res.send({
+                  status:1,
+                  result
+              })
+         }else{
+             res.send({
+                 status:0
+             })
+         }
+     })
+})
+
+app.post('/orderData1',(req,res)=>{
+    var status=3;
+    var status1=4;
+    var sql =" SELECT * FROM `orders` WHERE `cutomer_id`='"+req.body.cid+"' AND (`status`='"+status+"' OR `status`='"+status1+"')";
+     connection.query(sql,(err,result) => {
+         if(err) throw err;
+         if(result.length > 0){
+              res.send({
+                  status:1,
+                  result
+              })
+         }else{
+             res.send({
+                 status:0
+             })
+         }
+     })
+})
+
+app.post('/GroceriesorderData1',(req,res)=>{
+    var status=3;
+    var sql =" SELECT * FROM `grocer_order` WHERE `customer_id`='"+req.body.cid+"' AND `status`='"+status+"'";
+     connection.query(sql,(err,result) => {
+         if(err) throw err;
+         if(result.length > 0){
+              res.send({
+                  status:1,
+                  result
+              })
+         }else{
+             res.send({
+                 status:0
+             })
+         }
+     })
+})
+
+
+app.post('/orderGroceriesData',(req,res)=>{
+    var sql =" SELECT * FROM `grocer_order` WHERE `customer_id`='"+req.body.cid+"'";
      connection.query(sql,(err,result) => {
          if(err) throw err;
          if(result.length > 0){
@@ -253,8 +433,81 @@ app.post('/s_order',(req,res)=>{
          }
      })
 })
+
+app.post('/s_order1',(req,res)=>{
+    var status=3;
+    var status1=4;
+    var sql =" SELECT * FROM `orders` WHERE `shop`='"+req.body.shop+"' AND (`status`='"+status+"' OR `status`='"+status1+"')";
+     connection.query(sql,(err,result) => {
+         if(err) throw err;
+         if(result.length > 0){
+              res.send({
+                  status:1,
+                  result
+              })
+         }else{
+             res.send({
+                 status:0
+             })
+         }
+     })
+})
+
+app.post('/g_orders',(req,res)=>{
+    // console.log(req.body);
+    var sql =" SELECT * FROM `grocer_order` WHERE `shop`='"+req.body.shop+"'";
+     connection.query(sql,(err,result) => {
+         if(err) throw err;
+         if(result.length > 0){
+              res.send({
+                  status:1,
+                  result
+              })
+         }else{
+             res.send({
+                 status:0
+             })
+         }
+     })
+})
+
+app.post('/g_orders1',(req,res)=>{
+    // console.log(req.body);
+    var status =3;
+    var sql =" SELECT * FROM `grocer_order` WHERE `shop`='"+req.body.shop+"' AND  `status`='"+status+"'";
+     connection.query(sql,(err,result) => {
+         if(err) throw err;
+         if(result.length > 0){
+              res.send({
+                  status:1,
+                  result
+              })
+         }else{
+             res.send({
+                 status:0
+             })
+         }
+     })
+})
 app.post('/cancelOrder',(req,res) => {
     var sql = "DELETE FROM `orders` WHERE `orders`.`order_id` ='"+req.body.order_id+"' ";
+        connection.query(sql,(err,result)=>{
+            // console.log(sql)
+            if(err) throw err;
+            if(result.affectedRows == 1){
+                res.send({
+                    status:1
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }
+        })
+})
+
+app.post('/g_cancelOrder',(req,res) => {
+    var sql = "DELETE FROM `grocer_order` WHERE `grocer_order`.`order_id` ='"+req.body.order_id+"' ";
         connection.query(sql,(err,result)=>{
             // console.log(sql)
             if(err) throw err;
@@ -286,6 +539,23 @@ app.post('/approoval',(req,res) => {
             }
         })
 })
+app.post('/g_approoval',(req,res) => {
+    var status = 1
+    var sql = "UPDATE `grocer_order` SET `status`='"+status+"'  WHERE `order_id` = '"+req.body.id+"'";
+        connection.query(sql,(err,result)=>{
+            // console.log(sql)
+            if(err) throw err;
+            if(result.affectedRows == 1){
+                res.send({
+                    status:1
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }
+        })
+})
 app.post('/cancel',(req,res) => {
     var status = 2
     var sql = "UPDATE `orders` SET `status`='"+status+"'  WHERE `order_id` = '"+req.body.id+"'";
@@ -303,9 +573,44 @@ app.post('/cancel',(req,res) => {
             }
         })
 })
+app.post('/g_cancel',(req,res) => {
+    var status = 2
+    var sql = "UPDATE `grocer_order` SET `status`='"+status+"'  WHERE `order_id` = '"+req.body.id+"'";
+        connection.query(sql,(err,result)=>{
+            // console.log(sql)
+            if(err) throw err;
+            if(result.affectedRows == 1){
+                res.send({
+                    status:1
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }
+        })
+})
 app.post('/complete',(req,res) => {
     var status = 3
     var sql = "UPDATE `orders` SET `status`='"+status+"'  WHERE `order_id` = '"+req.body.id+"'";
+        connection.query(sql,(err,result)=>{
+            // console.log(sql)
+            if(err) throw err;
+            if(result.affectedRows == 1){
+                res.send({
+                    status:1,
+                    result
+                })
+            }else{
+                res.send({
+                    status:0
+                })
+            }
+        })
+})
+app.post('/g_complete',(req,res) => {
+    var status = 3
+    var sql = "UPDATE `grocer_order` SET `status`='"+status+"'  WHERE `order_id` = '"+req.body.id+"'";
         connection.query(sql,(err,result)=>{
             // console.log(sql)
             if(err) throw err;
@@ -462,8 +767,45 @@ app.post('/s_f_pwd',(req,res) =>{
     })
 })
 
+app.post('/g_f_pwd',(req,res) =>{
+    var question=req.body.question;
+    var email=req.body.email;
+    var pwd=req.body.password;
+    var sql="UPDATE `groceries` SET `pwd`='"+pwd+"' WHERE `email` = '"+email+"' AND `question`='"+question+"'";
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        if(result.affectedRows > 0){
+            res.send({
+                status:1
+            })
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
 app.post('/item1',(req,res)=>{
     var sql="SELECT * FROM `"+req.body.shop+"_1` WHERE `category`='"+req.body.cat+"'";
+    connection.query(sql,(err,result)=>{
+        // console.log(sql);
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            })
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/g_item1',(req,res)=>{
+    var sql="SELECT * FROM `"+req.body.shop+"_groceries` WHERE `item`='"+req.body.item+"'";
     connection.query(sql,(err,result)=>{
         // console.log(sql);
         if(err) throw err;

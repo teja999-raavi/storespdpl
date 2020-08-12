@@ -30,6 +30,27 @@ app.post('/',(req,res) => {
     })
 })
 
+app.post('/groceries',(req,res) => {
+    var email = req.body.email;
+    var pwd = req.body.pwd;
+    // var real_pwd = md5(pwd);
+    var sql = "SELECT * FROM `groceries` WHERE `email` = '"+email+"' AND `pwd` = '"+pwd+"' ";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        if(result.length == 1){
+            res.send({
+                status1 : 1,
+                data:result
+            })
+        }else{
+            res.send({
+                status : 0
+            })
+        }
+    })
+})
+
+
 app.post('/admin',(req,res) => {
     var email = req.body.email;
     var pwd = req.body.pwd;
@@ -168,6 +189,90 @@ app.post('/filemv',function(req,res){
         })
         
 })
+
+app.post('/Grocieries_step1',(req,res) => {
+    var sname = req.body.sname;
+    var name = req.body.name;
+    var phone = req.body.phone;
+    var loc = req.body.location;
+    var desc = req.body.desc;
+
+    var sql = "INSERT INTO `groceries`(`shopname`, `owner`, `phone`, `location`,`description`) VALUES ('"+sname+"','"+name+"','"+phone+"','"+loc+"','"+desc+"')";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        // console.log(result);
+        res.send(result);
+        if(result.affectedRows > 0){
+            var sql1 = "CREATE TABLE `"+req.body.sname+"_groceries` ( `id` INT(30) NOT NULL AUTO_INCREMENT , `shop_id` INT(30),`shop_name` VARCHAR(30) NOT NULL, `item` VARCHAR(30),`size` VARCHAR(30) NOT NULL ,`size2` VARCHAR(30) NOT NULL ,`size3` VARCHAR(30) NOT NULL ,`size4` VARCHAR(30) NOT NULL ,`size5` VARCHAR(30) NOT NULL ,`size6` VARCHAR(30) NOT NULL ,`brand` VARCHAR(20) NOT NULL , `description` TEXT NOT NULL ,`price` INT(44) NOT NULL ,`price2` INT(44) NOT NULL ,`price3` INT(44) NOT NULL ,`price4` INT(44) NOT NULL ,`price5` INT(44) NOT NULL ,`price6` INT(44) NOT NULL , `image` VARCHAR(99) NOT NULL ,`avaliable` VARCHAR(44) NOT NULL DEFAULT '0' , PRIMARY KEY (`id`))";
+            connection.query(sql1,(error,result2) => {
+                if(error) throw error
+                console.log("created");
+            })
+        }else{
+            console.log("something is wrong")
+        }
+    })
+});
+
+app.post('/Grocieries_step2',(req,res) => {
+    var email = req.body.email;
+    var pwd = req.body.pwd;
+    var con_pwd = req.body.con_pwd;
+    var real_pwd = md5(con_pwd);
+    if(pwd == con_pwd){
+
+    var sql = "UPDATE `groceries` SET `email`='"+email+"',`pwd`='"+pwd+"' WHERE `id`='"+req.body.insert_id+"'";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        // console.log(result);
+        res.send(result);
+    })
+    }else{
+        res.send("something Went wrong! Try again");
+    }
+});
+
+app.post('/Grocieries_fileupload',(req,res) => {
+    // console.log(sess,req.files)
+    if(req.files){
+            // console.log(req.files);
+            var file = req.files.filename;
+
+            var filename1 = sess.filename1
+    
+            file.mv('./public/images/'+filename1,function(err){
+                if(err) {
+                    throw err;
+                }else{
+                    console.log('uploaded1')
+                }
+            })
+           
+            res.send({status : 1})
+        }
+        delete sess.filename1;
+        
+    
+})
+app.post('/Grocieries_filemv',function(req,res){
+    // console.log(req.files);
+    // console.log(req.body);
+        sess = req.session;
+        var filename1 = req.body.file[0];
+        var name1 = filename1.split(".");
+        filename1 = req.body.insert_id+`_2`+"."+name1[1]; 
+        sess.filename1 = filename1;
+        // console.log(filename1);
+       
+        var sql = "UPDATE `groceries` SET `image`='"+filename1+"' WHERE `id` = '"+req.body.insert_id+"'";
+        // console.log(sql)
+        connection.query(sql,(err,result)=>{
+            if(err) throw err;
+            res.send(result);
+        })
+        
+})
+
 app.post('/add1',(req,res) => {
     // console.log(req.body)
     var id = req.body.id;
@@ -270,6 +375,76 @@ app.post('/addfile',function(req,res){
         
 })
 
+app.post('/g_add1',(req,res) => {
+    console.log(req.body)
+    var id = req.body.id;
+    var sname = req.body.shopname;
+    var item = req.body.item;
+    var size = req.body.size;
+    var size2 = req.body.size2;
+    var size3 = req.body.size3;
+    var size4 = req.body.size4;
+    var size5 = req.body.size5;
+    var size6 = req.body.size6;
+    var price = req.body.price;
+    var price2 = req.body.price2;
+    var price3 = req.body.price3;
+    var price4 = req.body.price4;
+    var price5 = req.body.price5;
+    var price6 = req.body.price6;
+    var brand = req.body.brand;
+    var desc = req.body.desc;
+    var avaliable = req.body.avaliable;
+    
+
+    var sql = "INSERT INTO `"+sname+"_groceries`(`shop_id`, `shop_name`,  `item`, `size`,`size2`,`size3`,`size4`,`size5`,`size6`,  `price`, `price2`, `price3`,`price4`,`price5`,`price6`,`brand`, `description`, `avaliable`) VALUES('"+id+"','"+sname+"','"+item+"','"+size+"','"+size2+"','"+size3+"','"+size4+"','"+size5+"','"+size6+"','"+price+"','"+price2+"','"+price3+"','"+price4+"','"+price5+"','"+price6+"','"+brand+"','"+desc+"','"+avaliable+"')";
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        res.send(result);
+    })
+})
+
+app.post('/add2_fileupload',(req,res) => {
+    // console.log(sess,req.files)
+    if(req.files){
+            // console.log(req.files);
+            var file = req.files.filename;
+
+            var filename1 = sess.filename1
+    
+            file.mv('./public/images/'+filename1,function(err){
+                if(err) {
+                    throw err;
+                }else{
+                    console.log('uploaded1')
+                }
+            })
+           
+            res.send({status : 1})
+        }
+        delete sess.filename1;
+        
+    
+})
+app.post('/add2_filemv',function(req,res){
+    // console.log(req.files);
+    // console.log(req.body);
+        sess = req.session;
+        var sname = req.body.shopname;
+        var filename1 = req.body.file[0];
+        var name1 = filename1.split(".");
+        filename1 = req.body.insert_id+"_"+req.body.shopname+`_groceries`+"."+name1[1]; 
+        sess.filename1 = filename1;
+    //    console.log(filename1);
+        var sql = "UPDATE `"+sname+"_groceries` SET `image`='"+filename1+"' WHERE `id` = '"+req.body.insert_id+"'";
+        console.log(sql)
+        connection.query(sql,(err,result)=>{
+            if(err) throw err;
+            res.send(result);
+        })
+        
+})
+
 app.post('/shopDetail',(req,res) => {
     
     var id = req.body.id;
@@ -279,8 +454,34 @@ app.post('/shopDetail',(req,res) => {
         if(err) throw err;
         if(result.length == 1){
             res.send({
-                
+                status:1,
                 result
+            })
+        }else{
+            res.send({
+                status:0,
+                
+            })
+        }
+    })
+})
+
+app.post('/Groceries_shopDetail',(req,res) => {
+    
+    var id = req.body.id;
+    // console.log(req.body)
+    var sql = "SELECT * FROM `groceries` WHERE `id` = '"+id+"'";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        if(result.length == 1){
+            res.send({
+                status:1,
+                result
+            })
+        }else{
+            res.send({
+                status:0,
+                
             })
         }
     })
@@ -292,7 +493,7 @@ app.post('/updateDelivery',(req,res) => {
     var del2 = req.body.del2;
     var del3 = req.body.del3;
     var question = req.body.question;
-    var update = 1
+    var update = 0
     // console.log(del1);
     var sql = "UPDATE `shop` SET `delivery1`='"+del1+"',`delivery2`='"+del2+"',`delivery3`='"+del3+"',`question`='"+question+"',`updateStatus`='"+update+"' WHERE `id` = '"+req.body.id+"'";
     // console.log(sql)
@@ -311,12 +512,86 @@ app.post('/updateDelivery',(req,res) => {
     })
 })
 
+app.post('/G_updateDelivery',(req,res) => {
+    // console.log(req.body);
+    var del1 = req.body.del1;
+    var del2 = req.body.del2;
+    var del3 = req.body.del3;
+    var question = req.body.question;
+    var update = 0
+    // console.log(del1);
+    var sql = "UPDATE `groceries` SET `delivery1`='"+del1+"',`delivery2`='"+del2+"',`delivery3`='"+del3+"',`question`='"+question+"',`updateStatus`='"+update+"' WHERE `id` = '"+req.body.id+"'";
+    // console.log(sql)
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        // console.log(result.length)
+        if(result.affectedRows == 1){
+            res.send({
+                status : 1,
+            })
+        }else{
+            res.send({
+                status : 0
+            })
+        }
+    })
+})
+
 app.post('/getDbdata',(req,res) => {
+   
     var shop = req.body.shop;
     var sql = "SELECT * FROM `"+shop+"_1` ORDER BY 'DESC'";
     connection.query(sql,(err,result) => {
         if(err) throw err;
-        res.send(result);
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/getGroceriesDbdata',(req,res) => {
+   
+    var shop = req.body.shop;
+    var sql = "SELECT * FROM `"+shop+"_groceries` ORDER BY 'DESC'";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/getGroceriesData',(req,res) => {
+    console.log(req.body);
+    var shop = req.body.shop;
+    var sql = "SELECT * FROM `"+shop+"_groceries` WHERE `id` = '"+req.body.id+"' ";
+    connection.query(sql,(err,result) => {
+        console.log(result)
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
     })
 })
 
@@ -329,7 +604,7 @@ app.post('/delete',(req,res,next) =>{
         console.log(result)
         // console.log(console.log(sql))
         if(err) throw err;
-        if(result[0].image1 == '' &&result[0].image1 == ''&&result[0].image1 == ''){
+        if(result[0].image1 == '' &&result[0].image2 == ''&&result[0].image3 == ''){
             var sql2 = "DELETE FROM `"+req.body.shop+"_1` WHERE `id` = '"+id+"'";
             connection.query(sql2,(error1,result12) => {
             if(error1) throw error1;
@@ -365,12 +640,94 @@ app.post('/delete',(req,res,next) =>{
     })
 });
 
+app.post('/groceries_delete',(req,res,next) =>{
+    // console.log(req.body);
+    // console.log(req.body.id,req.body.shop);
+    var id = req.body.id;
+    var sql = "SELECT `image` FROM `"+req.body.shop+"_groceries` WHERE `id` = '"+id+"'";
+    connection.query(sql,(err,result) => {
+        console.log(result)
+        // console.log(console.log(sql))
+        if(err) throw err;
+        if(result[0].image1 == '' ){
+            var sql2 = "DELETE FROM `"+req.body.shop+"_groceries` WHERE `id` = '"+id+"'";
+            connection.query(sql2,(error1,result12) => {
+            if(error1) throw error1;
+            if(result12.affectedRows == 1){
+                res.send({status : 1})
+            }else{
+                res.send({status : 2})
+            }
+        })
+        }else{
+        fs.unlink('public/images/'+result[0].image1,function(err){
+            if(err)throw err;
+            console.log('File1 deleted');
+        })
+        var sql1 = "DELETE FROM `"+req.body.shop+"_groceries` WHERE `id` = '"+id+"'";
+        connection.query(sql1,(error,result1) => {
+            if(error) throw error;
+            if(result1.affectedRows == 1){
+                res.send({status : 1})
+            }else{
+                res.send({status : 2})
+            }
+        })
+    }
+    })
+});
+
 app.post('/getdata',(req,res) => {
     var shop = req.body.shop;
     var sql = "SELECT * FROM `"+shop+"_1` WHERE `id`='"+req.body.id+"'";
     connection.query(sql,(err,result) => {
         if(err) throw err;
-        res.send(result);
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/getGroceriesdata',(req,res) => {
+    var shop = req.body.shop;
+    var sql = "SELECT * FROM `"+shop+"_groceries` WHERE `id`='"+req.body.id+"'";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/getGroceriesdata',(req,res) => {
+    var shop = req.body.shop;
+    var sql = "SELECT * FROM `"+shop+"_groceries` WHERE `id`='"+req.body.id+"'";
+    connection.query(sql,(err,result) => {
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
     })
 })
 
@@ -403,12 +760,65 @@ app.post('/edit',(req,res) => {
         })
 })
 
+app.post('/g_edit',(req,res) => {
+    var item = req.body.item;
+    var size = req.body.size;
+    var size2 = req.body.size2;
+    var size3 = req.body.size3;
+    var size4 = req.body.size4;
+    var size5 = req.body.size5;
+    var size6 = req.body.size6;
+    var brand = req.body.brand;
+    var desc = req.body.desc;
+    var avaliable = req.body.avaliable;
+    var price = req.body.price;
+    var price2 = req.body.price2;
+    var price3 = req.body.price3;
+    var price4 = req.body.price4;
+    var price5 = req.body.price5;
+    var price6 = req.body.price6;
+
+    var sql = "UPDATE `"+req.body.shopname+"_groceries` SET `item`='"+item+"', `size`='"+size+"',`size2`='"+size2+"',`size3`='"+size3+"',`size4`='"+size4+"',`size5`='"+size5+"',`size6`='"+size6+"',  `price`='"+price+"', `price2`='"+price2+"', `price3`='"+price3+"', `price4`='"+price4+"', `price5`='"+price5+"', `price6`='"+price6+"', `brand`='"+brand+"', `description`='"+desc+"',  `avaliable`='"+avaliable+"'  WHERE `id` = '"+req.body.id+"'";
+        // console.log(sql)
+        connection.query(sql,(err,result)=>{
+            if(err) throw err;
+            res.send(result);
+        })
+})
+
 app.get('/shopTotal',(req,res) => { 
     var status = 0;
     var sql = "SELECT * FROM `shop` WHERE `status` = '"+status+"' ORDER BY 'DESC'";
     connection.query(sql,(err,result)=>{
         if(err) throw err;
-        res.send(result);
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.get('/shopGroceriesTotal',(req,res) => { 
+    var status = 0;
+    var sql = "SELECT * FROM `groceries` WHERE `status` = '"+status+"' ORDER BY 'DESC'";
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
     })
 })
 
@@ -417,13 +827,89 @@ app.get('/AproovedDetails',(req,res) => {
     var sql = "SELECT * FROM `shop` WHERE `status` = '"+status+"' ORDER BY 'DESC'";
     connection.query(sql,(err,result)=>{
         if(err) throw err;
-        res.send(result);
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/LocAproovedDetails',(req,res) => {
+    var status = 1;
+    var sql = "SELECT * FROM `shop` WHERE `status` = '"+status+"' AND `location`='"+req.body.location+"' ORDER BY 'DESC'";
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.post('/Groceries1AproovedDetails',(req,res) => {
+    // console.log(req.body);
+    var status = 1;
+    var sql = "SELECT * FROM `groceries` WHERE `status` = '"+status+"' AND `location`='"+req.body.location+"' ORDER BY 'DESC'";
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
+    })
+})
+
+app.get('/groceriesAproovedDetails',(req,res) => {
+    var status = 1;
+    var sql = "SELECT * FROM `groceries` WHERE `status` = '"+status+"' ORDER BY 'DESC'";
+    connection.query(sql,(err,result)=>{
+        if(err) throw err;
+        if(result.length > 0){
+            res.send({
+                status:1,
+                result
+            });
+        }else{
+            res.send({
+                status:0
+            })
+        }
     })
 })
 
 app.post('/approve',(req,res) => {
     var status = 1;
     var sql = "UPDATE `shop` SET `status`='"+status+"' WHERE `id` = '"+req.body.id+"'";
+    connection.query(sql,(error,result1) => {
+        if(error) throw error;
+        if(result1.affectedRows == 1){
+            res.send({status : 1})
+        }else{
+            res.send({status : 2})
+        }
+    })
+})
+app.post('/approve1',(req,res) => {
+    var status = 1;
+    var sql = "UPDATE `groceries` SET `status`='"+status+"' WHERE `id` = '"+req.body.id+"'";
     connection.query(sql,(error,result1) => {
         if(error) throw error;
         if(result1.affectedRows == 1){
@@ -447,4 +933,19 @@ app.post('/unapprove',(req,res) => {
         }
     })
 })
+
+app.post('/unapprove1',(req,res) => {
+    var status = 0;
+    var sql = "UPDATE `groceries` SET `status`='"+status+"' WHERE `id` = '"+req.body.id+"'";
+    connection.query(sql,(error,result1) => {
+        // console.log(sql)
+        if(error) throw error;
+        if(result1.affectedRows == 1){
+            res.send({status : 1})
+        }else{
+            res.send({status : 2})
+        }
+    })
+})
+
 module.exports = app;
