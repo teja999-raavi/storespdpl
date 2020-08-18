@@ -5,6 +5,7 @@ var md5 = require('md5');
 var fileUpload = require('express-fileupload');
 var fs = require('fs');
 var session = require('express-session');
+var path= require('path')
 
 app.use(fileUpload());
 
@@ -646,10 +647,10 @@ app.post('/groceries_delete',(req,res,next) =>{
     var id = req.body.id;
     var sql = "SELECT `image` FROM `"+req.body.shop+"_groceries` WHERE `id` = '"+id+"'";
     connection.query(sql,(err,result) => {
-        console.log(result)
+        console.log(result[0].image)
         // console.log(console.log(sql))
         if(err) throw err;
-        if(result[0].image1 == '' ){
+        if(result[0].image == '' ){
             var sql2 = "DELETE FROM `"+req.body.shop+"_groceries` WHERE `id` = '"+id+"'";
             connection.query(sql2,(error1,result12) => {
             if(error1) throw error1;
@@ -660,7 +661,7 @@ app.post('/groceries_delete',(req,res,next) =>{
             }
         })
         }else{
-        fs.unlink('public/images/'+result[0].image1,function(err){
+        fs.unlink('public/images/'+result[0].image,function(err){
             if(err)throw err;
             console.log('File1 deleted');
         })
@@ -862,8 +863,8 @@ app.post('/Groceries1AproovedDetails',(req,res) => {
     // console.log(req.body);
     var status = 1;
     var sql = "SELECT * FROM `groceries` WHERE `status` = '"+status+"' AND `location`='"+req.body.location+"' ORDER BY 'DESC'";
-    connection.query(sql,(err,result)=>{
-        if(err) throw err;
+    connection.query(sql,(error,result)=>{
+        if(error) throw error;
         if(result.length > 0){
             res.send({
                 status:1,
@@ -946,6 +947,12 @@ app.post('/unapprove1',(req,res) => {
             res.send({status : 2})
         }
     })
+})
+
+app.get('/image',function(req,res) {
+    // console.log(req.query.id);
+    res.sendFile(path.join(__dirname, "../public", "images/" +req.query.id));
+    // res.sendFile('assets/'+req.params.id,{root: __dirname});
 })
 
 module.exports = app;
