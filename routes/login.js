@@ -159,7 +159,7 @@ app.post('/fileupload',(req,res) => {
 
             var filename1 = sess.filename1
     
-            file.mv('./public/images/'+filename1,function(err){
+            file.mv('./assets/'+filename1,function(err){
                 if(err) {
                     throw err;
                 }else{
@@ -241,7 +241,7 @@ app.post('/Grocieries_fileupload',(req,res) => {
 
             var filename1 = sess.filename1
     
-            file.mv('./public/images/'+filename1,function(err){
+            file.mv('./assets/'+filename1,function(err){
                 if(err) {
                     throw err;
                 }else{
@@ -321,21 +321,21 @@ app.post('/addfileupload',(req,res) => {
             // console.log(filename2)
             // console.log(filename3)
     
-            file.mv('./public/images/'+filename1,function(err){
+            file.mv('./assets/'+filename1,function(err){
                 if(err) {
                     throw err;
                 }else{
                     console.log('uploaded1')
                 }
             })
-            file1.mv('./public/images/'+filename2,function(err){
+            file1.mv('./assets/'+filename2,function(err){
                 if(err) {
                     throw err;
                 }else{
                     console.log('uploaded2')
                 }
             })
-            file2.mv('./public/images/'+filename3,function(err){
+            file2.mv('./assets/'+filename3,function(err){
                 if(err) {
                     throw err;
                 }else{
@@ -413,7 +413,7 @@ app.post('/add2_fileupload',(req,res) => {
 
             var filename1 = sess.filename1
     
-            file.mv('./public/images/'+filename1,function(err){
+            file.mv('./assets/'+filename1,function(err){
                 if(err) {
                     throw err;
                 }else{
@@ -616,15 +616,15 @@ app.post('/delete',(req,res,next) =>{
             }
         })
         }else{
-        fs.unlink('public/images/'+result[0].image1,function(err){
+        fs.unlink('assets/'+result[0].image1,function(err){
             if(err)throw err;
             console.log('File1 deleted');
         })
-        fs.unlink('public/images/'+result[0].image2,function(err){
+        fs.unlink('assets/'+result[0].image2,function(err){
             if(err)throw err;
             console.log('File2 deleted');
         })
-        fs.unlink('public/images/'+result[0].image3,function(err){
+        fs.unlink('assets/'+result[0].image3,function(err){
             if(err)throw err;
             console.log('File3 deleted');
         })
@@ -661,7 +661,7 @@ app.post('/groceries_delete',(req,res,next) =>{
             }
         })
         }else{
-        fs.unlink('public/images/'+result[0].image,function(err){
+        fs.unlink('assets/'+result[0].image,function(err){
             if(err)throw err;
             console.log('File1 deleted');
         })
@@ -951,7 +951,7 @@ app.post('/unapprove1',(req,res) => {
 
 app.get('/image',function(req,res) {
     // console.log(req.query.id);
-    res.sendFile(path.join(__dirname, "../public", "images/" +req.query.id));
+    res.sendFile(path.join(__dirname, "../assets/" +req.query.id));
     // res.sendFile('assets/'+req.params.id,{root: __dirname});
 })
 
